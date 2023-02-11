@@ -1,0 +1,47 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical" >
+
+	<include layout="@layout/dialog_title"/>
+
+	<TextView
+		android:id="@+id/error_help"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="5dp"
+		android:layout_marginRight="10dp"
+		android:ems="10"
+		android:text="If you see periodic network connectivity issues, try excluding the app from Battery Optimisation, and Allow Background Data. Click for settings..."
+		android:textStyle="italic"
+		android:visibility="gone"></TextView>
+
+	<EditText android:id="@+id/activity_main_filter_text"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" android:ems="10"
+		android:hint="search"
+		android:layout_marginTop="5dp"
+		android:layout_marginLeft="10dp"
+		android:layout_marginRight="10dp">
+	</EditText>
+
+	<ListView
+		android:id="@+id/listLogs"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="4dp"
+		android:layout_marginTop="4dp"
+		android:layout_marginBottom="8dp"
+		android:cacheColorHint="@android:color/transparent"
+		android:listSelector="@android:color/transparent"
+		android:divider="@null"
+		android:dividerHeight="0sp"
+		android:layout_weight="1"
+		android:paddingLeft="0dp" />
+
+
+
+</LinearLayout>
+
+

@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".ActivityMain">
+    <item android:id="@+id/action_add_currency"
+        android:title="Add Currency"
+        android:orderInCategory="100"  />
+    <item android:id="@+id/action_rate_alerts"
+        android:title="Rate Alerts"
+        android:orderInCategory="100" />
+    <item android:id="@+id/action_settings"
+        android:title="Settings"
+        android:orderInCategory="100" />
+    <item android:id="@+id/action_view_logs"
+        android:title="View Log"
+        android:orderInCategory="100" />
+    <item android:id="@+id/action_help"
+        android:title="Help"
+        android:orderInCategory="100" />
+    <item android:id="@+id/action_force"
+        android:title="Force Update"
+        android:orderInCategory="100" />
+</menu>

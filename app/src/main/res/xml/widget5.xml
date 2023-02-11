@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/widget5_layout"
+    android:minHeight="40dp"
+    android:minWidth="110dp"
+    android:updatePeriodMillis="600000000"
+    android:configure="net.stargw.fox.WidgetConfigure"
+    android:previewImage="@drawable/widget5" >
+</appwidget-provider>

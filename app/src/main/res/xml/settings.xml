@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="rate_feed"
+        app:title="Currency Rate Feed">
+
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:key="use_ecb"
+            android:summary="Free rate from European Central Bank. Updated daily"
+            android:title="Use EC Bank Daily Rate [ECB]" />
+
+        <CheckBoxPreference
+            android:title="Use Open Exchange Rates [OER]"
+            android:summary="Get a free API key from Open Exchange Rates and enjoy hourly updates on a wider range of currencies"
+            android:key="use_open"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false" >
+        </CheckBoxPreference>
+
+        <EditTextPreference
+            android:title="API Key:"
+            android:key="openexchange"
+            android:defaultValue="none"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="use_open"
+            android:summary=""/>
+
+        <Preference android:summary="Get API Key:\nhttps://www.openexchangerates.org"
+            app:dependency="use_open"  >
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://openexchangerates.org/signup/free" />
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="rate_feed"
+        app:title="Battery Optimisation">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="battery"
+            app:title="Do Not Optimise App"
+            app:summary="Allow app to run in background. App is fully optimised already for Doze mode and battery efficiency" >
+        </Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="alert"
+        app:title="Notification/Alert Preferences">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="notifications"
+            app:title="Allow Notifications"
+            app:summary="Allow app notification channels" >
+        </Preference>
+
+        <CheckBoxPreference
+            android:title="Delete Rate Alerts"
+            android:summary="Delete a rate alert once it has fired. Default behaviour is to keep triggering whenever the rate threshold is crossed."
+            android:defaultValue="false"
+            app:key="delete_rate"
+            app:iconSpaceReserved="false" >
+        </CheckBoxPreference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="ui"
+        app:title="UI Preferences">
+
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:key="ui_inverse"
+            android:title="Show inverse rates"
+            android:summary="Show inverse rates and single rates as appropriate" />
+
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:key="ui_transfer"
+            android:title="Show Transfer Option"
+            android:summary="Show option to transfer money provided by Transferwise" />
+
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:key="ui_history"
+            android:title="Show History option"
+            android:summary="Show option to display history provided by third party website" />
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>
