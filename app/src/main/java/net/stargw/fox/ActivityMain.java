@@ -48,6 +48,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -480,6 +482,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
                     Global.Log("Edit text changed = " + w, 3);
                     try {
                         float f1 = Float.parseFloat(w) * Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(code);
+                        // This may not multiply back out to be the same value!
                         Global.setBaseCurrencyAmount(f1);
                     } catch (NumberFormatException e){
                         Log.w(Global.TAG, e);
@@ -1173,7 +1176,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
     {
         // https://transferwise.com/gb/currency-converter/gbp-to-usd-rate
 
-        String url = "https://transferwise.com/gb/currency-converter/" + Global.getBaseCurrency().toLowerCase() + "-to-" + code.toLowerCase() + "-rate" + "?ref=fox@stargw.net";
+        String url = "https://wise.com/gb/currency-converter/" + Global.getBaseCurrency().toLowerCase() + "-to-" + code.toLowerCase() + "-rate" + "?ref=fox@stargw.net";
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);
@@ -1183,8 +1186,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
     //
     // Display the help screen
     //
-    private void showHelp()
-    {
+    private void showHelp() {
 
         String verName = "latest";
         try {
@@ -1196,7 +1198,11 @@ public class ActivityMain extends Activity implements ActivityMainListener {
             Global.Log("Could not get version number", 3);
         }
 
-        String url = "https://www.stargw.net/apps/fox/help.html?ver=" + verName;
+
+        String app = getString(R.string.app_name);
+
+        String url = "https://www.stargw.net/android/help.html?ver=" + verName + "&app=" + app;
+
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);

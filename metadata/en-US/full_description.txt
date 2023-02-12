@@ -1,0 +1,7 @@
+A free simple Foreign Exchange Rate Currency app. Clean interface, free rates and no adverts.
+
+Get 24hour rates free from the ECB or sign up for a free Open Exchange Rate account and receive hourly rates from more currencies.
+
+Set Exchange rate Notifications and get alerts.
+
+5 styles of widgets to chose from. 
