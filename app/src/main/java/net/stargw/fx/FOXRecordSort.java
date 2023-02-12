@@ -1,4 +1,4 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 import java.io.Serializable;
 import java.util.Comparator;

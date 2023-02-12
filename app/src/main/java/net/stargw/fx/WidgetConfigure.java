@@ -1,4 +1,4 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -20,7 +20,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 

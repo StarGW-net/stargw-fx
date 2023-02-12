@@ -1,12 +1,8 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.SystemClock;
 
 public class FOXService extends Service {
 

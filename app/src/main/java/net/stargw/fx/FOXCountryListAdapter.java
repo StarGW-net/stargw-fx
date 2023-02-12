@@ -1,62 +1,36 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class FOXRateAlertAdapter extends ArrayAdapter<FOXRateAlertRecord> implements Filterable
+public class FOXCountryListAdapter extends ArrayAdapter<String>
 {
 
     private Context context;
 
-    private ArrayList<FOXRateAlertRecord> appsSorted; // for filtering
-    private ArrayList<FOXRateAlertRecord> appsOriginal; // for filtering
+    private ArrayList<String> appsSorted; // for filtering
+    private ArrayList<String> appsOriginal; // for filtering
 
-    public FOXRateAlertAdapter(Context context, ArrayList<FOXRateAlertRecord> items) {
-        // super(context, 0, items);   // this causes the filter to modify the actual ArrayList passed in!!!
-        super(context,R.layout.row_fullview3);
+    public FOXCountryListAdapter(Context context, ArrayList<String> items) {
+        super(context, 0, items);
+
         this.context = context;
 
-        this.appsOriginal = new ArrayList<FOXRateAlertRecord>();
-        this.appsSorted = new ArrayList<FOXRateAlertRecord>();
+        this.appsOriginal = new ArrayList<String>();
 
-        this.appsSorted.addAll(items);
-        this.appsOriginal.addAll(items);
+        for(int i = 0, l = getCount(); i < l; i++) {
+            String code = getItem(i);
+            this.appsOriginal.add(code);
+        }
 
-        // Global.Log("HERE",3);
-    }
-
-
-    public void reset(ArrayList<FOXRateAlertRecord> items)
-    {
-        // Global.Log("HERE - change data",3);
-        notifyDataSetInvalidated();
-        this.appsSorted.clear();
-        this.appsSorted.addAll(items);
-        this.appsOriginal.clear();
-        this.appsOriginal.addAll(items);
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public int getCount() {
-        return appsSorted.size();
-    }
-
-    @Override
-    public FOXRateAlertRecord getItem(int position) {
-        return appsSorted.get(position);
     }
 
     @Override
@@ -64,28 +38,27 @@ public class FOXRateAlertAdapter extends ArrayAdapter<FOXRateAlertRecord> implem
     {
         // if (GPXRecord != null) && position >= GPXRecord.six
 
-        FOXRateAlertRecord rateAlert = getItem(position);
+        String code = getItem(position);
 
         try {
 
             if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_ratealerts, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_quickview, parent, false);
             }
             // Lookup view for data population
-            TextView text1 = (TextView) convertView.findViewById(R.id.countryCode1);
-            text1.setText(rateAlert.code1);
+            TextView text1 = (TextView) convertView.findViewById(R.id.rowText1);
+            text1.setText(code);
 
-            ImageView im1 = (ImageView) convertView.findViewById(R.id.countryFlag1);
-            im1.setImageResource(Global.getFlag(rateAlert.code1));
+            ImageView im = (ImageView) convertView.findViewById(R.id.flag);
+            im.setImageResource(Global.getFlag((code)));
 
-            TextView text2 = (TextView) convertView.findViewById(R.id.countryCode2);
-            text2.setText(rateAlert.code2);
-
-            ImageView im2 = (ImageView) convertView.findViewById(R.id.countryFlag2);
-            im2.setImageResource(Global.getFlag(rateAlert.code2));
-
-            TextView text3 = (TextView) convertView.findViewById(R.id.rateAmount);
-            text3.setText(String.format(java.util.Locale.US,"%.3f", rateAlert.value)  );
+            TextView text4 = (TextView) convertView.findViewById(R.id.rowText2);
+            if (Global.CodeToCurrency.containsKey(code))
+            {
+                text4.setText(context.getString(Global.CodeToCurrency.get(code)));
+            } else {
+                text4.setText("");
+            }
 
             // Return the completed view to render on screen
             return convertView;
@@ -122,7 +95,7 @@ public class FOXRateAlertAdapter extends ArrayAdapter<FOXRateAlertRecord> implem
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
-                appsSorted = (ArrayList<FOXRateAlertRecord>)results.values;
+                appsSorted = (ArrayList<String>)results.values;
                 notifyDataSetChanged();
                 clear();
 
@@ -148,13 +121,19 @@ public class FOXRateAlertAdapter extends ArrayAdapter<FOXRateAlertRecord> implem
                 FilterResults result = new FilterResults();
                 if(constraint != null && constraint.toString().length() > 0)
                 {
-                    ArrayList<FOXRateAlertRecord> filteredItems = new ArrayList<FOXRateAlertRecord>();
+                    ArrayList<String> filteredItems = new ArrayList<String>();
 
                     for(int i = 0, l = appsOriginal.size(); i < l; i++)
                     {
-                        FOXRateAlertRecord app = appsOriginal.get(i);
-                        if( (app.code1.toLowerCase().contains(constraint)) ||
-                                (app.code2.toLowerCase().contains(constraint))  ) {
+                        String app = appsOriginal.get(i);
+                        String name = "AAA";
+                        if (Global.CodeToCurrency.containsKey(app.toUpperCase())) {
+                            int z = Global.CodeToCurrency.get(app.toUpperCase());
+                            name = context.getResources().getString(z).toLowerCase();
+                        }
+                        if( (app.toLowerCase().contains(constraint) ) ||
+                                (name.toLowerCase().contains(constraint)) ) {
+                            // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
                             filteredItems.add(app);
                         }
 

@@ -1,4 +1,4 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 
 public class Widget3 extends WidgetProvider {

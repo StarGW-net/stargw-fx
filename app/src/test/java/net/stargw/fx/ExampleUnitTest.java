@@ -1,4 +1,4 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 import org.junit.Test;
 

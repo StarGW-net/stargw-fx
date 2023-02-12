@@ -1,4 +1,4 @@
-package net.stargw.fox;
+package net.stargw.fx;
 
 /**
  * Created by swatts on 16/06/16.

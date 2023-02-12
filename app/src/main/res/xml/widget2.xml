@@ -4,6 +4,6 @@
     android:minHeight="40dp"
     android:minWidth="280dp"
     android:updatePeriodMillis="600000000"
-    android:configure="net.stargw.fox.WidgetConfigure"
+    android:configure="net.stargw.fx.WidgetConfigure"
     android:previewImage="@drawable/widget2" >
 </appwidget-provider>

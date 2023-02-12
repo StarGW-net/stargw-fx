@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.stargw.fox">
+    package="net.stargw.fx">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -12,9 +12,9 @@
         android:roundIcon="@drawable/round"
         android:supportsRtl="true"
         android:theme="@style/SWTheme"
-        android:name="net.stargw.fox.Global">
+        android:name="net.stargw.fx.Global">
 
-        <activity android:name=".ActivityMain"
+        <activity android:name="net.stargw.fx.ActivityMain"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,7 @@
         </activity>
 
 
-        <receiver android:name="net.stargw.fox.Widget1"
+        <receiver android:name="net.stargw.fx.Widget1"
             android:label="Updates">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -32,7 +32,7 @@
                 android:resource="@xml/widget1" />
         </receiver>
 
-        <receiver android:name="net.stargw.fox.Widget2"
+        <receiver android:name="net.stargw.fx.Widget2"
             android:label="Updates">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -41,7 +41,7 @@
                 android:resource="@xml/widget2" />
         </receiver>
 
-        <receiver android:name="net.stargw.fox.Widget3"
+        <receiver android:name="net.stargw.fx.Widget3"
             android:label="Updates">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -50,7 +50,7 @@
                 android:resource="@xml/widget3" />
         </receiver>
 
-        <receiver android:name="net.stargw.fox.Widget4"
+        <receiver android:name="net.stargw.fx.Widget4"
             android:label="Updates">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -59,7 +59,7 @@
                 android:resource="@xml/widget4" />
         </receiver>
 
-        <receiver android:name="net.stargw.fox.Widget5"
+        <receiver android:name="net.stargw.fx.Widget5"
             android:label="Updates">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -68,17 +68,17 @@
                 android:resource="@xml/widget5" />
         </receiver>
 
-        <activity android:name="net.stargw.fox.WidgetConfigure">
+        <activity android:name="net.stargw.fx.WidgetConfigure">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
 
-        <activity android:name="net.stargw.fox.MySettingsActivity"
+        <activity android:name="net.stargw.fx.MySettingsActivity"
             android:launchMode="singleInstance">
         </activity>
 
-        <receiver android:name="net.stargw.fox.FOXBroadcastReceiver"
+        <receiver android:name="net.stargw.fx.FOXBroadcastReceiver"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true">
@@ -89,7 +89,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="net.stargw.fox.fileprovider"
+            android:authorities="net.stargw.fx.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
 
