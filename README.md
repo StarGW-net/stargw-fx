@@ -10,6 +10,6 @@ After a number of years I have stopped releasing and supporting apps on Google P
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/net.stargw.fok/)
+     height="80">](https://f-droid.org/packages/net.stargw.fx/)
      
 TODO: Currently I use AlarmManager to update the currency rates every hour. This can sometimes fail if the network is not ready. I should probably switch to using WorkManager.
