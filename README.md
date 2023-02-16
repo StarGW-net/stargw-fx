@@ -6,7 +6,7 @@ Set Exchange rate Notifications and get alerts.
 
 5 styles of widgets to chose from. 
 
-After a number of years I have stopped releasing and supporting apps on Google Play and have now moved all my apps to F-Droid.
+After a number of years I have stopped releasing apps on Google Play and have now moved all my apps to F-Droid.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"

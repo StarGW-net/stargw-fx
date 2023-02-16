@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    lintOptions {abortOnError false}
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
@@ -8,8 +9,8 @@ android {
         applicationId "net.stargw.fx"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 9
-        versionName "9"
+        versionCode 10
+        versionName "10"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

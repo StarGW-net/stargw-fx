@@ -106,7 +106,7 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
                 float f1 = Global.FOXCurrencyAll.get(fox.code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
                 text3.setText(String.format(java.util.Locale.US,"%.3f", f1)  );
             } else {
-                text3.setText("unknown");
+                text3.setText("0");
             }
 
 
@@ -129,7 +129,7 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
                         float f1 = Global.FOXCurrencyAll.get(fox.code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency());  // * Global.getBaseCurrencyAmount();
                         text5.setText("1" + Global.getBaseCurrency() + " = " + String.format(java.util.Locale.US, "%.3f", f1));
                     } else {
-                        text5.setText("unknown");
+                        text5.setText("0");
                     }
                 } else {
                     if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(fox.code)) {
