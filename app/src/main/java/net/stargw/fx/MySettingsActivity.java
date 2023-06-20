@@ -131,7 +131,7 @@ public class MySettingsActivity extends AppCompatActivity {
 
                     /*
                     Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + "net.stargw.fox"));
+                    intent.setData(Uri.parse("package:" + "net.stargw.fx"));
                     startActivity(intent);
 */
 

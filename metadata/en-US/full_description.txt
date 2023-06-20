@@ -5,3 +5,8 @@ Get 24hour rates free from the ECB or sign up for a free Open Exchange Rate acco
 Set Exchange rate Notifications and get alerts.
 
 5 styles of widgets to chose from. 
+
+Version 11
+==========
+Fixed crash when sharing log
+

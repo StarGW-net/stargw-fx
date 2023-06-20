@@ -1902,7 +1902,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         Global.Log("READ PATH = " + f.toString(),3);
 
         // This provides a read only content:// for other apps
-        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fox.fileprovider",f);
+        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fx.fileprovider",f);
 
         Global.Log("URI PATH = " + uri2.toString(),3);
 
@@ -1951,7 +1951,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         }
 
         // This provides a read only content:// for other apps
-        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fox.fileprovider",file);
+        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fx.fileprovider",file);
 
         Intent intent2 = new Intent(Intent.ACTION_SEND);
         intent2.putExtra(Intent.EXTRA_STREAM, uri2);

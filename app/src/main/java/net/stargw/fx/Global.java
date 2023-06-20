@@ -76,12 +76,12 @@ public class Global extends Application {
 
     // public static final int FOX_INTERVAL = 60; // minutes
 
-    static final String UPDATEALARM = "net.stargw.fox.intent.action.UPDATEALARM";
-    static final String SCREEN_REFRESH_INTENT = "net.stargw.fox.intent.action.REFRESH";
-    static final String FOX_OPEN_ERROR = "net.stargw.fox.intent.action.open.error";
-    static final String FOX_OPEN_ALERTS = "net.stargw.fox.intent.action.open.alerts";
+    static final String UPDATEALARM = "net.stargw.fx.intent.action.UPDATEALARM";
+    static final String SCREEN_REFRESH_INTENT = "net.stargw.fx.intent.action.REFRESH";
+    static final String FOX_OPEN_ERROR = "net.stargw.fx.intent.action.open.error";
+    static final String FOX_OPEN_ALERTS = "net.stargw.fx.intent.action.open.alerts";
 
-    static final String UPDATEWIDGET1 = "net.stargw.fox.update.UPDATE.WIDGET1";
+    static final String UPDATEWIDGET1 = "net.stargw.fx.update.UPDATE.WIDGET1";
 
     public static TreeMap<String, Float> FOXCurrencyAll;
     public static TreeMap<String, Float> FOXCurrencyMy;
