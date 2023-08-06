@@ -9,8 +9,8 @@ android {
         applicationId "net.stargw.fx"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 11
-        versionName "11"
+        versionCode 12
+        versionName "12"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -19,6 +19,19 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "${applicationId}-${variant.buildType.name}-v${defaultConfig.versionName}.apk"
+            Task swTask = project.task("zzz${variant.name}", type: Copy) {
+                from output.outputFile.getParent()
+                into file("apks")
+                include output.outputFileName
+                // rename(output.outputFileName, "${applicationId}-${variant.buildType.name}-v${defaultConfig.versionName}.apk")
+                rename(output.outputFileName,output.outputFileName)
+            }
+            variant.assemble.finalizedBy(swTask)
         }
     }
 }
