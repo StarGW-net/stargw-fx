@@ -10,14 +10,13 @@ After a number of years I have stopped releasing apps on Google Play and have no
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/net.stargw.fx/)
-
-<br>
+     height="80">](https://www.stargw.net/android/apks.html?net.stargw.fx)
+    
 Buy Developer a Coffee:
 <br>
 
 [<img src="https://www.stargw.net/android/karma/images/coffee-buy2.png"
      alt="By Developer a Coffee"
-     height="120">](https://www.stargw.net/money/?android)
+     height="120">](https://www.stargw.net/dosh/donate.html?android)
      
 TODO: Currently I use AlarmManager to update the currency rates every hour. This can sometimes fail if the network is not ready. I should probably switch to using WorkManager.
