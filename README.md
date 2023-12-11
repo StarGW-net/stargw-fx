@@ -1,6 +1,6 @@
 A free simple Foreign Exchange Rate Currency app. Clean interface, free rates and no adverts.
 
-[<img src="https://github.com/StarGW-net/stargw-fx/blob/main/metadata/en-US/images/phoneScreenshots/01.png?raw=true"
+[<img src="https://github.com/StarGW-net/stargw-fx/blob/main/metadata/en-US/images/phoneScreenshots/01b.png?raw=true"
      alt="FX Rates"
      height="320">]()
 
