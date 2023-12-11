@@ -1,5 +1,10 @@
 A free simple Foreign Exchange Rate Currency app. Clean interface, free rates and no adverts.
 
+[<img src="https://github.com/StarGW-net/stargw-fx/blob/main/metadata/en-US/images/phoneScreenshots/01.png?raw=true"
+     alt="FX Rates"
+     height="320">]()
+
+
 Get 24hour rates free from the ECB or sign up for a free Open Exchange Rate account and receive hourly rates from more currencies.
 
 Set Exchange rate Notifications and get alerts.
