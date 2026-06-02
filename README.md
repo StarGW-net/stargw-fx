@@ -25,4 +25,4 @@ Buy Developer a Coffee:
      alt="By Developer a Coffee"
      height="120">](https://www.stargw.net/dosh/donate.html?android)
      
-DONE: Switched from AlarmManager to WorkManager for more reliable currency rate updates, especially when the network is not immediately available.
+
