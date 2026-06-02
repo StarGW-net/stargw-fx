@@ -68,9 +68,9 @@ public class WidgetConfigure extends Activity {
         im1.setImageResource(Global.getFlag(Global.getBaseCurrency()));
 
         final TextView code2 = (TextView) findViewById(R.id.countryCode2);
-        String code = Global.FOXCurrencyAll.firstKey();
+        String code = Global.FOXCurrencyAll.keySet().iterator().next();
         if ( (Global.FOXCurrencyMy != null) && (Global.FOXCurrencyMy.size() != 0) ) {
-            code = Global.FOXCurrencyMy.firstKey();
+            code = Global.FOXCurrencyMy.keySet().iterator().next();
         }
         code2.setText(code);
 

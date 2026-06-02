@@ -54,6 +54,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import static android.view.View.GONE;
@@ -169,7 +171,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
             Global.Log("FOXRateAlerts empty",2);
         }
 
-        Global.FOXCurrencyAll = Global.readFOXFile(Global.FILE_FOX_CACHE);
+        Global.FOXCurrencyAll = new TreeMap<>(Global.readFOXFile(Global.FILE_FOX_CACHE));
         if ( (Global.FOXCurrencyAll == null) || (Global.FOXCurrencyAll.size() == 0) ) {
             Global.Log("FOXCurrencyAll empty",2);
             Global.FOXCurrencyAll = new TreeMap<String, Float>();
@@ -254,16 +256,43 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         });
 
         // Display it!
-        adapterCurrency = new FOXCurrencyAdapter(myContext, (TreeMap<String, Float>) Global.FOXCurrencyMy);
+        adapterCurrency = new FOXCurrencyAdapter(myContext, Global.FOXCurrencyMy);
 
         ListView listView = (ListView) findViewById(R.id.listFOX);
 
         listView.setAdapter(adapterCurrency);
 
         listView.setClickable(true);
-
     }
 
+
+    public void itemLongClick(final String code, View view, final int position) {
+        PopupMenu popup = new PopupMenu(myContext, view);
+        if (position > 0) {
+            popup.getMenu().add(0, 1, 0, "Move Up");
+        }
+        if (position < adapterCurrency.getCount() - 1) {
+            popup.getMenu().add(0, 2, 0, "Move Down");
+        }
+        popup.getMenu().add(0, 3, 0, "Remove");
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == 1) { // Up
+                    adapterCurrency.moveItem(position, position - 1);
+                } else if (item.getItemId() == 2) { // Down
+                    adapterCurrency.moveItem(position, position + 1);
+                } else if (item.getItemId() == 3) { // Remove
+                    Global.FOXCurrencyMy.remove(code);
+                    Global.writeFOXFile(Global.FOXCurrencyMy, Global.FILE_FOX_MY);
+                    updateGUI();
+                }
+                return true;
+            }
+        });
+        popup.show();
+    }
 
     // change base currency amount
     private void enterAmount()
@@ -679,7 +708,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         // remove currencies we already have
         tempCurrency.remove(Global.getBaseCurrency());
 
-        for(TreeMap.Entry<String,Float> entry : Global.FOXCurrencyMy.entrySet()) {
+        for(Map.Entry<String,Float> entry : Global.FOXCurrencyMy.entrySet()) {
             String key = entry.getKey();
             tempCurrency.remove(key);
         }
@@ -1410,7 +1439,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
 
         final TextView code2 = (TextView) info.findViewById(R.id.countryCode2);
         if (code == null) {
-            code = Global.FOXCurrencyMy.firstKey();
+            code = Global.FOXCurrencyMy.keySet().iterator().next();
         }
         code2.setText(code);
 

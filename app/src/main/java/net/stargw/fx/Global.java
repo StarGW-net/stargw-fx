@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -92,8 +93,8 @@ public class Global extends Application {
 
     static final String UPDATEWIDGET1 = "net.stargw.fx.update.UPDATE.WIDGET1";
 
-    public static TreeMap<String, Float> FOXCurrencyAll;
-    public static TreeMap<String, Float> FOXCurrencyMy;
+    public static Map<String, Float> FOXCurrencyAll;
+    public static Map<String, Float> FOXCurrencyMy;
     public static TreeMap<String, Integer> CodeToCurrency;
     public static ArrayList<FOXRateAlertRecord> FOXRateAlerts;
 
@@ -303,7 +304,7 @@ public class Global extends Application {
 
         Global.FOXRateAlerts = Global.readRateAlertFile(Global.FILE_FOX_ALERTS);
 
-        Global.FOXCurrencyAll = Global.readFOXFile(Global.FILE_FOX_CACHE);
+        Global.FOXCurrencyAll = new TreeMap<>(Global.readFOXFile(Global.FILE_FOX_CACHE));
 
         if ( Global.FOXCurrencyAll.size() == 0) {
             Global.Log("FOXCurrencyAll empty",2);
@@ -315,6 +316,10 @@ public class Global extends Application {
         }
 
         Global.FOXCurrencyMy = Global.readFOXFile(Global.FILE_FOX_MY);
+
+        if (!(Global.FOXCurrencyMy instanceof LinkedHashMap)) {
+            Global.FOXCurrencyMy = new LinkedHashMap<>(Global.FOXCurrencyMy);
+        }
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -471,12 +476,12 @@ public class Global extends Application {
         }
     }
 
-    public static TreeMap<String, Float> readFOXFile(String f) {
+    public static Map<String, Float> readFOXFile(String f) {
         Properties properties = new Properties();
         File appDir = mContext.getFilesDir();
         File mypath = new File(appDir, f);
 
-        TreeMap<String, Float> simpleClass = new TreeMap<String, Float>();
+        Map<String, Float> simpleClass = new LinkedHashMap<String, Float>();
 
         // TreeMap<String, Float> simpleClass = new TreeMap<String, Float> (new FOXRecordSort());  // This is the comparitor because it needs to be searalisable as well
 
@@ -492,7 +497,7 @@ public class Global extends Application {
             FileInputStream myFile = new FileInputStream(mypath);
             ObjectInputStream is = new ObjectInputStream(myFile);
             try {
-                simpleClass = (TreeMap<String, Float>) is.readObject();
+                simpleClass = (Map<String, Float>) is.readObject();
             } catch (ClassNotFoundException e) {
                 Log.w(TAG, e);
             }
@@ -686,6 +691,9 @@ public class Global extends Application {
 
                         // Log monitored currencies
                         Global.FOXCurrencyMy = Global.readFOXFile(Global.FILE_FOX_MY);
+                        if (!(Global.FOXCurrencyMy instanceof LinkedHashMap)) {
+                            Global.FOXCurrencyMy = new LinkedHashMap<>(Global.FOXCurrencyMy);
+                        }
                         if (Global.FOXCurrencyMy.size() == 0 )
                         {
                             // Global.FOXCurrencyMy.put("GBP", (float) 1);
@@ -695,7 +703,7 @@ public class Global extends Application {
                             Global.FOXCurrencyMy.put("SGD", (float) 0);
                         }
 
-                        for(TreeMap.Entry<String,Float> entry : Global.FOXCurrencyMy.entrySet()) {
+                        for(Map.Entry<String,Float> entry : Global.FOXCurrencyMy.entrySet()) {
                             String key = entry.getKey();
                             if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(key)) {
                                 float f1 = Global.FOXCurrencyAll.get(key) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();

@@ -12,6 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -21,7 +24,7 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
 
     private Context context;
 
-    private TreeMap<String, Float> treeMap;
+    private Map<String, Float> treeMap;
     private String[] mapKeys;
 
     ActivityMainListener listener;
@@ -36,7 +39,7 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
 
     // ActivityMainListener listener;
 
-    public FOXCurrencyAdapter(Context context, TreeMap<String, Float> apps) {
+    public FOXCurrencyAdapter(Context context, Map<String, Float> apps) {
         super(context, R.layout.activity_main);
 
         this.context = context;
@@ -49,9 +52,9 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
         // this.appsOriginal = new TreeMap<String, Float> (new FOXRecordSort());
         this.appsOriginal = new ArrayList<FOXCurrencyRecord>();
 
-        treeMap = new TreeMap<String, Float>();
+        treeMap = new LinkedHashMap<String, Float>();
 
-        treeMap.putAll(apps); // copy of the TreeMap
+        treeMap.putAll(apps); // copy of the Map
         mapKeys = treeMap.keySet().toArray(new String[getCount()]);
 
 
@@ -63,6 +66,28 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
             this.appsOriginal.add(z); // .put(code,0f); // don't care about the value for the filter
         }
 
+    }
+
+    public void moveItem(int from, int to) {
+        if (from < 0 || from >= mapKeys.length || to < 0 || to >= mapKeys.length) return;
+
+        ArrayList<String> keys = new ArrayList<>(Arrays.asList(mapKeys));
+        String key = keys.remove(from);
+        keys.add(to, key);
+        mapKeys = keys.toArray(new String[0]);
+
+        // Update treeMap to match new order
+        Map<String, Float> newMap = new LinkedHashMap<>();
+        for (String k : mapKeys) {
+            newMap.put(k, treeMap.get(k));
+        }
+        treeMap = newMap;
+
+        // Update Global as well so it's remembered
+        Global.FOXCurrencyMy = new LinkedHashMap<>(treeMap);
+        Global.writeFOXFile(Global.FOXCurrencyMy, Global.FILE_FOX_MY);
+
+        notifyDataSetChanged();
     }
 
     public int getCount() {
@@ -156,6 +181,14 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
                 }
             });
 
+            im.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.itemLongClick(myCode, v, position);
+                    return true;
+                }
+            });
+
             LinearLayout l1 = (LinearLayout) convertView.findViewById(R.id.rowMiddle);
             l1.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -165,12 +198,36 @@ public class FOXCurrencyAdapter extends ArrayAdapter<String> {
                 }
             });
 
+            l1.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.itemLongClick(myCode, v, position);
+                    return true;
+                }
+            });
+
             LinearLayout l2 = (LinearLayout) convertView.findViewById(R.id.rowLayoutValue);
             l2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // listener.changeSelectedItem(pos); // STEVE ADD HERE
                     listener.enterAmount(myCode);
+                }
+            });
+
+            l2.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.itemLongClick(myCode, v, position);
+                    return true;
+                }
+            });
+
+            convertView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.itemLongClick(myCode, v, position);
+                    return true;
                 }
             });
 
