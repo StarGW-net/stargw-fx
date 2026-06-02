@@ -1,18 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    lintOptions {abortOnError false}
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdk 35
 
     defaultConfig {
         applicationId "net.stargw.fx"
-        minSdkVersion 24
-        targetSdkVersion 29
-        versionCode 13
-        versionName "13"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion 30
+        targetSdk 35
+        versionCode 14
+        versionName "14"
     }
 
     buildTypes {
@@ -20,6 +16,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    namespace 'net.stargw.fx'
+    lint {
+        abortOnError false
     }
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
@@ -38,11 +38,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'androidx.core:core:1.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.preference:preference:1.2.1'
 
+    implementation "androidx.work:work-runtime:2.11.2"
 }

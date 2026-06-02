@@ -40,6 +40,7 @@
 
     </PreferenceCategory>
 
+    <!--
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:key="rate_feed"
@@ -48,8 +49,22 @@
         <Preference
             app:iconSpaceReserved="false"
             app:key="battery"
-            app:title="Do Not Optimise App"
-            app:summary="Allow app to run in background. App is fully optimised already for Doze mode and battery efficiency" >
+            app:title="Battery Usage"
+            app:summary="Allow Unrestricted. App is fully optimised already for Doze mode and battery efficiency" >
+        </Preference>
+
+    </PreferenceCategory>
+-->
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="app_permissions"
+        app:title="App Permissions">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="app_permissions2"
+            app:title="App Permissions"
+            app:summary="Allow app to use Mobile Data and run in background." >
         </Preference>
 
     </PreferenceCategory>

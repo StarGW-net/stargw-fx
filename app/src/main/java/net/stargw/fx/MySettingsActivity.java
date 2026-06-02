@@ -71,7 +71,7 @@ public class MySettingsActivity extends AppCompatActivity {
                     {
                         Global.Log("Checkbox changed updating OER!",3);
                         Global.updateCurrency();
-                        Global.setAlarm();
+                        Global.setUpdateCurrencySchedule();
                     } else {
                         Global.Log("Rate feed changed to OER but key is still none!",3);
                     }
@@ -91,50 +91,36 @@ public class MySettingsActivity extends AppCompatActivity {
                         c.setText(k);
                         Global.Log("Key changed updating OER!",3);
                         Global.updateCurrency(); // async
-                        Global.setAlarm();
+                        Global.setUpdateCurrencySchedule();
                     } else {
                         Global.Log("Key is still none!",3);
                     }
                     return true;
                 }
             });
-
+            /*
             Preference battery = findPreference("battery");
             battery.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    // Use the documented action string:
-/*
-                    if (Build.MANUFACTURER == "samsung") {
-                        val intent = Intent()
-                        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-                            intent.component = ComponentName("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity");
-                        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                            intent.component = ComponentName("com.samsung.android.sm", "com.samsung.android.sm.ui.battery.BatteryActivity");
-                        }
-                    }
-                } else {
-*/
-                    // startActivity(new Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS));
-/*
-                    Intent tetherSettings = new Intent();
-                    tetherSettings.setClassName("com.android.settings", "com.android.settings.SubSettings");
+                    Global.openBatterySettings(getContext());
+                    return false;
+                }
 
-                    startActivity(tetherSettings);
-*/
+            });
+            */
+            Preference perms = findPreference("app_permissions2");
+            perms.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Global.Log("ACTION_APPLICATION_DETAILS_SETTINGS", 2);
 
-                    startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    Intent intent = new Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:" + Global.getContext().getPackageName())
+                    );
 
-                    // startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), );
-
-                    // startActivity(new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
-
-                    /*
-                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + "net.stargw.fx"));
                     startActivity(intent);
-*/
-
                     return false;
                 }
 

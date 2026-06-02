@@ -25,4 +25,4 @@ Buy Developer a Coffee:
      alt="By Developer a Coffee"
      height="120">](https://www.stargw.net/dosh/donate.html?android)
      
-TODO: Currently I use AlarmManager to update the currency rates every hour. This can sometimes fail if the network is not ready. I should probably switch to using WorkManager.
+DONE: Switched from AlarmManager to WorkManager for more reliable currency rate updates, especially when the network is not immediately available.

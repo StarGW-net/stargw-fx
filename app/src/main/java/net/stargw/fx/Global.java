@@ -1,12 +1,20 @@
 package net.stargw.fx;
 
-import android.app.AlarmManager;
 import android.app.Application;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.net.Uri;
+import android.provider.Settings;
+import androidx.core.app.NotificationCompat;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,7 +23,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.preference.PreferenceManager;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -48,6 +56,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by swatts on 10/03/18.
@@ -115,6 +124,12 @@ public class Global extends Application {
         file.delete();
 
         Global.Log("onCreate - Global",2);
+
+/*
+        Global.Log("onCreate - Delete Work Managers",2);
+        WorkManager.getInstance(mContext)
+                .cancelAllWork();
+*/
 
         Global.CodeToCurrency = new TreeMap<String, Integer>();
         /*
@@ -305,7 +320,7 @@ public class Global extends Application {
 
         createNotificationChannels();
 
-        setAlarm();  // move to global
+        setUpdateCurrencySchedule();  // move to global
 
         updateMyWidgets();
         checklastUpdate();
@@ -332,7 +347,7 @@ public class Global extends Application {
         if (getLogLevel() >= level) {
             Date timeNow = new Date();
             Calendar newDate = new GregorianCalendar();
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.getDefault());
 
             newDate.setTime(timeNow);
             String humanDate = format.format(newDate.getTime());
@@ -345,33 +360,33 @@ public class Global extends Application {
     }
 
     public static int getErrorCount() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         int s = p.getInt("errorCount", 0);
         Log("Get Error Count: " + s,3);
         return s;
     }
 
     public static void setErrorCount(int s) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         p.edit().putInt("errorCount", s).apply();
         Log("Set Error Count: " + s,3);
     }
 
     public static int getLogLevel() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         int s = p.getInt("logLevel", 0);
         // Log("Get Log Level: " + s,3);
         return s;
     }
 
     public static void setLogLevel(int s) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         p.edit().putInt("logLevel", s).apply();
         Log("Set Log Level: " + s,3);
     }
 
     public static void increaseErrorCount() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         int s = p.getInt("errorCount", 0);
         s = s + 1;
         Log("Set Error Count: " + s,3);
@@ -379,20 +394,20 @@ public class Global extends Application {
     }
 
     public static Float getBaseCurrencyAmount() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         Float s = p.getFloat("baseCurrencyAmount", 1f);
 
         return s;
     }
 
     public static void setBaseCurrencyAmount(Float s) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 
         p.edit().putFloat("baseCurrencyAmount", s).apply();
     }
 
     public static String getBaseCurrency() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         String s = p.getString("baseCurrency", "GBP");
 
         if(!Global.FOXCurrencyAll.containsKey(s))
@@ -405,13 +420,13 @@ public class Global extends Application {
     }
 
     public static void setBaseCurrency(String s) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 
         p.edit().putString("baseCurrency", s.toUpperCase()).apply();
     }
 
     public static long getUpdateTime() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         long t = p.getLong("updateTime", 0);
 
         return t;
@@ -419,7 +434,7 @@ public class Global extends Application {
 
 
     public static void setUpdateTime() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 
         Date timeNow = new Date();
         long t = timeNow.getTime();
@@ -428,7 +443,7 @@ public class Global extends Application {
     }
 
     public static String getUpdateSource() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
         String source = p.getString("updateSource", "none");
 
         return source;
@@ -436,7 +451,7 @@ public class Global extends Application {
 
 
     private static void setUpdateSource(String source) {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        SharedPreferences p = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
 
         p.edit().putString("updateSource", source).apply();
     }
@@ -549,14 +564,20 @@ public class Global extends Application {
     }
 
     public static void updateCurrency() {
-
         Thread thread = new Thread() {
             @Override
             public void run() {
+                updateCurrencySync();
+            }
+        };
+        thread.start();
+    }
+
+    public static boolean updateCurrencySync() {
 
                 Date timeNow = new Date();
                 Calendar newDate = new GregorianCalendar();
-                SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+                SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.getDefault());
 
                 newDate.setTime(timeNow);
                 String humanDate = format.format(newDate.getTime());
@@ -720,17 +741,16 @@ public class Global extends Application {
                         notifyError(humanDate + " " + errorMessage);
                     }
                 }
-            }
-        };
-        thread.start();
 
+                return (Global.getErrorCount() == 0);
     }
+
 
     private static void parseOpenExchangeRates(InputStream inputStream)
     {
         Date timeNow = new Date();
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         newDate.setTime(timeNow);
         String humanDate = format.format(newDate.getTime());
@@ -779,7 +799,7 @@ public class Global extends Application {
     {
         Date timeNow = new Date();
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         newDate.setTime(timeNow);
         String humanDate = format.format(newDate.getTime());
@@ -959,14 +979,14 @@ public class Global extends Application {
         intent.setAction(FOX_OPEN_ERROR);
 
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0,
-               intent , PendingIntent.FLAG_UPDATE_CURRENT);
+               intent , PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         int id = "error".hashCode();
 
         if (Build.VERSION.SDK_INT >= 26) {
             // pick channel
 
-            Notification n = new Notification.Builder(mContext, channel1.getId())
+            Notification n = new NotificationCompat.Builder(mContext, channel1.getId())
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
                     // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
                     .setContentText(message)
@@ -982,7 +1002,7 @@ public class Global extends Application {
 
             // build notification
             // the addAction re-use the same intent to keep the example short
-            Notification n = new Notification.Builder(mContext)
+            Notification n = new NotificationCompat.Builder(mContext)
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
                     // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
                     .setContentText(message)
@@ -1006,14 +1026,14 @@ public class Global extends Application {
         intent.setAction(FOX_OPEN_ALERTS);
 
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 
         int id = message.hashCode();
 
         Date timeNow = new Date();
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         newDate.setTime(timeNow);
         String humanDate = format.format(newDate.getTime());
@@ -1026,7 +1046,7 @@ public class Global extends Application {
             bigIcon = R.drawable.down512;
         }
         if (Build.VERSION.SDK_INT >= 26) {
-            Notification n = new Notification.Builder(mContext, channel2.getId())
+            Notification n = new NotificationCompat.Builder(mContext, channel2.getId())
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
                     // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
                     .setContentText(message)
@@ -1040,7 +1060,7 @@ public class Global extends Application {
 
             // build notification
             // the addAction re-use the same intent to keep the example short
-            Notification n = new Notification.Builder(mContext)
+            Notification n = new NotificationCompat.Builder(mContext)
                     .setContentTitle(Global.getContext().getString(R.string.app_name))
                     // .setContentText(String.format(Global.getContext().getString(R.string.notfity_deny),appName))
                     .setContentText(message)
@@ -1085,7 +1105,7 @@ public class Global extends Application {
 
         Date timeNow = new Date();
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         newDate.setTime(timeNow);
         String humanDate = format.format(newDate.getTime());
@@ -1138,94 +1158,100 @@ public class Global extends Application {
 
     }
 
+    public static void setUpdateCurrencySchedule() {
+        SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        boolean ecb = !(SP.getBoolean("use_open", true));
 
+        long intervalHours = 12;
+        if (ecb == false) {
+            intervalHours = 1;
+        }
 
-    public static class NextAlarmTime{
+        // Calculate delay to the next hour mark (00 minutes)
+        Calendar calendar = Calendar.getInstance();
+        int minutes = calendar.get(Calendar.MINUTE);
+        int seconds = calendar.get(Calendar.SECOND);
+        int millis = calendar.get(Calendar.MILLISECOND);
 
-        long millisecs;
-        String humanDate;
-        long interval;
-
-        public NextAlarmTime()
-        {
-            Date timeNow = new Date();
-            Calendar newDate = new GregorianCalendar();
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
-
-            long t2 = timeNow.getTime();
-            newDate.setTime(new Date(t2));
-
-            SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
-            boolean ecb = !(SP.getBoolean("use_open",true));
-
-            interval = AlarmManager.INTERVAL_HALF_DAY;
-            if (ecb == false) {
-                interval = AlarmManager.INTERVAL_HOUR;
-
-                newDate.add(Calendar.HOUR, 1);
-                newDate.set(Calendar.MINUTE, 0);
-                newDate.set(Calendar.SECOND, 0);
+        long initialDelay;
+        if (intervalHours == 1) {
+            initialDelay = (60 - minutes) * 60 * 1000L - seconds * 1000L - millis;
+        } else {
+            // Align 12 hour updates to 00:00 or 12:00
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            if (hour < 12) {
+                initialDelay = (12 - hour) * 60 * 60 * 1000L - minutes * 60 * 1000L - seconds * 1000L - millis;
             } else {
-                int hour = newDate.get(Calendar.HOUR);
-                if (hour > 12)
-                {
-                    newDate.add(Calendar.DATE,1);
-                    newDate.set(Calendar.HOUR, 0);
-                } else {
-                    newDate.set(Calendar.HOUR, 12);
-                }
-
-                newDate.set(Calendar.MINUTE, 0);
-                newDate.set(Calendar.SECOND, 0);
+                initialDelay = (24 - hour) * 60 * 60 * 1000L - minutes * 60 * 1000L - seconds * 1000L - millis;
             }
-
-            humanDate = format.format(newDate.getTime());
-            Global.Log("Next Update = " + humanDate,2);
-
-            millisecs = newDate.getTimeInMillis();
-
-            // return this;
         }
 
+        Global.Log("Scheduling WorkManager Update in " + (initialDelay / 60000) + " mins", 2);
+        // Global.Log("Scheduling WorkManager Update every " + intervalHours + " hours", 2);
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest updateWorkRequest =
+                new OneTimeWorkRequest.Builder(UpdateCurrencyWorker.class)
+                        .setConstraints(constraints)
+                        .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+                        .build();
+
+        WorkManager.getInstance(Global.getContext()).enqueueUniqueWork(
+                "CurrencyUpdateWork",
+                ExistingWorkPolicy.REPLACE, // 💥 Resets and forces the new single execution
+                updateWorkRequest
+        );
     }
 
-    public static void setAlarm()
+
+
+    public static String getNextAlarmTime()
     {
+        SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(Global.getContext());
+        boolean ecb = !(SP.getBoolean("use_open",true));
 
-        NextAlarmTime nextAlarmTime = new NextAlarmTime();
-
-        PendingIntent pendingIntent;
-        Intent alarmIntent = new Intent(Global.getContext(), FOXBroadcastReceiver.class);
-
-        alarmIntent.putExtra("ALARM",Global.UPDATEALARM);
-
-        AlarmManager alarmManager =
-                (AlarmManager) Global.getContext().getSystemService(Context.ALARM_SERVICE);
-
-        pendingIntent = PendingIntent.getBroadcast(Global.getContext(), 666, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-        if (pendingIntent != null && alarmManager != null) {
-            Global.Log("Cancelling Alarm",2);
-            alarmManager.cancel(pendingIntent);
+        long intervalHours = 12;
+        if (ecb == false) {
+            intervalHours = 1;
         }
 
-        Global.Log("Setting Alarm Interval " + nextAlarmTime.interval,2);
-        // Non-Wakeup does not seem to fire on the hour
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, nextAlarmTime.millisecs,
-        // alarmManager.setInexactRepeating(AlarmManager.RTC, nextAlarmTime.millisecs,
-                nextAlarmTime.interval, pendingIntent);
+        // Calculate delay to the next hour mark (00 minutes)
+        Calendar calendar = Calendar.getInstance();
+        int minutes = calendar.get(Calendar.MINUTE);
+        int seconds = calendar.get(Calendar.SECOND);
+        int millis = calendar.get(Calendar.MILLISECOND);
+
+        long initialDelay;
+        if (intervalHours == 1) {
+            initialDelay = (60 - minutes) * 60 * 1000L - seconds * 1000L - millis;
+        } else {
+            // Align 12 hour updates to 00:00 or 12:00
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            if (hour < 12) {
+                initialDelay = (12 - hour) * 60 * 60 * 1000L - minutes * 60 * 1000L - seconds * 1000L - millis;
+            } else {
+                initialDelay = (24 - hour) * 60 * 60 * 1000L - minutes * 60 * 1000L - seconds * 1000L - millis;
+            }
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
+        return format.format(new Date(System.currentTimeMillis() + initialDelay));
     }
 
-    public static void checklastUpdate()
+
+    public static boolean checklastUpdate()
     {
 
         long t1 = Global.getUpdateTime();;
+        boolean allowUpdate = false;
 
         Date timeNow = new Date();
 
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         newDate.setTime(new Date(t1));
         String humanDate = format.format(newDate.getTime());
@@ -1241,26 +1267,28 @@ public class Global extends Application {
         SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(mContext);
         boolean ecb = !(SP.getBoolean("use_open",true));
 
-        long interval = AlarmManager.INTERVAL_HALF_DAY;
+        long interval = 43200000L; // AlarmManager.INTERVAL_HALF_DAY;
         if (ecb == false)
         {
-            interval = AlarmManager.INTERVAL_HOUR;
+            interval = 3600000L; // AlarmManager.INTERVAL_HOUR;
         }
 
-        long x = (t1 + interval + (AlarmManager.INTERVAL_HOUR/2L)); // add half an hour to be safe
+        long x = (t1 + interval + (300000L)); // add 5 minutes to be safe
         // if ( (t1 + (Global.FOX_INTERVAL * 60 * 1000)) < t2 )
         if ( x < t2 )
         {
-            Global.Log("Currency older than " + interval + " minutes...updating...",2);
+            Global.Log("Currency older than " + (interval / 60000) + " minutes...updating...",2);
             Global.updateCurrency();  // takes care of first start as well
+            allowUpdate = true;
         } else {
             if (Global.getErrorCount() > 0) // do we want to back off after a certain amount of errors?
             {
                 Global.Log("Errors = " + Global.getErrorCount() + "...updating...",2);
                 Global.updateCurrency();  // takes care of first start as well
+                allowUpdate = true;
             }
         }
-
+        return allowUpdate;
     }
 
     public static int getFlag(String code)
@@ -1321,5 +1349,17 @@ public class Global extends Application {
 
         info.show();
 
+    }
+
+    public static void openBatterySettings(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Intent intent = new Intent("android.settings.APP_BATTERY_SETTINGS");
+            intent.setData(Uri.parse("package:" + context.getPackageName()));
+            context.startActivity(intent);
+        } else {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + context.getPackageName()));
+            context.startActivity(intent);
+        }
     }
 }

@@ -58,7 +58,7 @@ public class WidgetProvider extends AppWidgetProvider {
             try {
 
                 Intent intent = new Intent(context, ActivityMain.class);
-                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
                 RemoteViews views = new RemoteViews(context.getPackageName(), getView());
 
@@ -186,9 +186,9 @@ public class WidgetProvider extends AppWidgetProvider {
 
         Calendar newDate = new GregorianCalendar();
 
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
         if (getView() == R.layout.widget2_layout) {
-            format = new SimpleDateFormat("HH:mm\ndd/MM/yy");
+            format = new SimpleDateFormat("HH:mm\ndd/MM/yy", java.util.Locale.US);
         }
 
         newDate.setTime(new Date(t1));
@@ -197,7 +197,7 @@ public class WidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widgit_update_date, humanDate);
 
         Intent i = new Intent(context, ActivityMain.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, i, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widgit_click, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);

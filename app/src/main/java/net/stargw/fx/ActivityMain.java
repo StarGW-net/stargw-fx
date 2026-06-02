@@ -38,6 +38,8 @@ import android.widget.Toast;
 
 
 import androidx.core.content.FileProvider;
+import androidx.core.content.ContextCompat;
+import androidx.work.WorkManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -79,6 +81,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         myContext = this;
 
         Global.Log("onCreate - ActivityMain",2);
+
 
 
         ImageView btn = (ImageView) findViewById(R.id.activity_main_menu_options);
@@ -123,15 +126,17 @@ public class ActivityMain extends Activity implements ActivityMainListener {
                     showErrorLogs(Global.FILE_LOG_ALERTS,"Fired Rate Alerts", null);
                 }
             }
-        } else {
-            Global.checklastUpdate();
         }
+
+        Global.checklastUpdate();
+
 
         // register receiver
         mReceiver = new BroadcastListener();
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Global.SCREEN_REFRESH_INTENT);
-        registerReceiver(mReceiver, mIntentFilter);
+
+        ContextCompat.registerReceiver(this, mReceiver, mIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
 
         updateGUI();
 
@@ -156,6 +161,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
 
     private void updateGUI()
     {
+        Global.Log("updateGUI()",2);
 
         Global.FOXRateAlerts = Global.readRateAlertFile(Global.FILE_FOX_ALERTS);
 
@@ -229,7 +235,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         // Date timeNow = new Date();
 
         Calendar newDate = new GregorianCalendar();
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yy", java.util.Locale.US);
 
         String humanDate = format.format(newDate.getTime());
         newDate.setTime(new Date(t1));
@@ -243,8 +249,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
             public void onClick(View v) {
                 // display when next update is
                 // getAlarm();
-                Global.NextAlarmTime nextAlarmTime = new Global.NextAlarmTime();
-                Toast.makeText(myContext.getApplicationContext(), "Next Update Scheduled\n\n" + nextAlarmTime.humanDate, Toast.LENGTH_SHORT).show();
+                Toast.makeText(myContext, "Next Update:\n" + Global.getNextAlarmTime(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -256,17 +261,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         listView.setAdapter(adapterCurrency);
 
         listView.setClickable(true);
-/*
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                String code = adapterCurrency.getItem(position);
-                Global.Log("Got item = " + code,2);
-                displayOptions(code);
-            }
-        });
-*/
     }
 
 
@@ -722,130 +717,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
 
 
 
-    private void showLogs(final String fileName, String title, final Dialog d)
-    {
 
-        final Dialog info = new Dialog(myContext);
-        info.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        info.setContentView(R.layout.dialog_logs);
-
-        Window window = info.getWindow();
-        window.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-
-        // Show dialog in upper part of screen to stop it jumping when keyboard displayed
-        WindowManager.LayoutParams wmlp = window.getAttributes();
-        // wmlp.gravity = Gravity.TOP | Gravity.LEFT;
-        // wmlp.x = 100;   //x position
-        wmlp.y = 200;   //y position
-
-        // info.setTitle(title);
-        final TextView text0 = (TextView) info.findViewById(R.id.title);
-        text0.setText(title);
-
-        text0.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                // Do something here
-                shareLog(fileName);
-                return false;
-            }
-        });
-
-        info.getWindow().setGravity(Gravity.TOP);
-
-        ImageView im0 = (ImageView) info.findViewById(R.id.delete);
-        im0.setOnClickListener(new View.OnClickListener() {
-            // @Override
-            public void onClick(View v) {
-                File file = new File(Global.getContext().getFilesDir(), fileName);
-                file.delete();
-                if (d != null) // delete the icon
-                {
-                    ImageView im0 = (ImageView) d.findViewById(R.id.delete);
-                    im0.setVisibility(View.INVISIBLE);
-                    TextView text0 = (TextView) d.findViewById(R.id.alerts_num);
-                    text0.setVisibility(View.GONE);
-                }
-                info.cancel();
-            }
-        });
-
-        if (fileName.equals(Global.FILE_LOG_ERRORS))
-        {
-            Global.cancelNotify("error".hashCode());
-
-            TextView help = (TextView) info.findViewById(R.id.error_help);
-            help.setVisibility(View.VISIBLE);
-
-            help.setOnClickListener(new View.OnClickListener() {
-                // @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
-                }
-            });
-        } else {
-            Global.cancelNotifyAlerts();
-        }
-
-        ArrayList<String> logBuffer = new ArrayList<String>();
-
-        File file = new File(Global.getContext().getFilesDir(), fileName);
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                logBuffer.add(line) ;
-            }
-            br.close();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            Global.Log( "Error opening log file: " + e,2);
-        }
-
-        // Global.Log("Log Buffer: " + logBuffer.toString(),3);
-        Collections.reverse(logBuffer);
-        // ArrayAdapter<String> adapter = new ArrayAdapter<String>(myContext, android.R.layout.simple_list_item_1, logBuffer);
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(myContext, R.layout.dialog_logs_row, logBuffer);
-
-        ListView listView = (ListView) info.findViewById(R.id.listLogs);
-
-        listView.setAdapter(adapter);
-
-        listView.setClickable(true);
-
-        /*
-        Button button = (Button) info.findViewById(R.id.logsClose);
-        button.setOnClickListener(new View.OnClickListener() {
-            // @Override
-            public void onClick(View v) {
-                info.cancel();
-            }
-        });
-        */
-
-        EditText myFilter = (EditText) info.findViewById(R.id.activity_main_filter_text);
-
-        myFilter.addTextChangedListener(new TextWatcher() {
-
-            public void afterTextChanged(Editable s) {
-            }
-
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                // Global.Log("Filter on text: " + s , 3);
-                adapter.getFilter().filter(s.toString());
-            }
-        });
-
-        info.show();
-
-    }
 
     private void showErrorLogs(final String fileName, final String title, final Dialog d)
     {
@@ -911,7 +783,13 @@ public class ActivityMain extends Activity implements ActivityMainListener {
             help.setOnClickListener(new View.OnClickListener() {
                 // @Override
                 public void onClick(View v) {
-                    startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    // Global.openBatterySettings(myContext);
+                    Intent intent = new Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:" + Global.getContext().getPackageName())
+                    );
+
+                    startActivity(intent);
                 }
             });
         } else {
@@ -1119,7 +997,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
 
         item = m.findItem(R.id.action_force);
 
-        if(Global.getErrorCount() > 0) {
+        if ( (Global.getErrorCount() > 0) || (Global.checklastUpdate() == true) ) {
             item.setVisible(true);
         } else {
             item.setVisible(false);
@@ -1902,7 +1780,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         Global.Log("READ PATH = " + f.toString(),3);
 
         // This provides a read only content:// for other apps
-        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fx.fileprovider",f);
+        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),Global.getContext().getPackageName() + ".fileprovider",f);
 
         Global.Log("URI PATH = " + uri2.toString(),3);
 
@@ -1951,7 +1829,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         }
 
         // This provides a read only content:// for other apps
-        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),"net.stargw.fx.fileprovider",file);
+        Uri uri2 = FileProvider.getUriForFile(Global.getContext(),Global.getContext().getPackageName() + ".fileprovider",file);
 
         Intent intent2 = new Intent(Intent.ACTION_SEND);
         intent2.putExtra(Intent.EXTRA_STREAM, uri2);
