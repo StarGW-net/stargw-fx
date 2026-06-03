@@ -1,0 +1,3 @@
+Updated to Android API 35
+Switched from sechuled Alarm to WorkManager
+Added reordering currencies - long press, then three dots on left to drag
