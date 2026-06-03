@@ -497,7 +497,8 @@ public class Global extends Application {
             FileInputStream myFile = new FileInputStream(mypath);
             ObjectInputStream is = new ObjectInputStream(myFile);
             try {
-                simpleClass = (Map<String, Float>) is.readObject();
+                Map<String, Float> loadedMap = (Map<String, Float>) is.readObject();
+                simpleClass.putAll(loadedMap);
             } catch (ClassNotFoundException e) {
                 Log.w(TAG, e);
             }

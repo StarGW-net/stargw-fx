@@ -1,7 +1,5 @@
 package net.stargw.fx;
 
-import android.view.View;
-
 /**
  * Created by swatts on 16/06/16.
  */
@@ -20,6 +18,4 @@ public interface ActivityMainListener
     public void displayOptions(String code);
 
     public void enterAmount(String code);
-
-    public void itemLongClick(String code, View view, int position);
 }

@@ -3,315 +3,222 @@ package net.stargw.fx;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
-/**
- * Created by swatts on 17/11/15.
- */
-public class FOXCurrencyAdapter extends ArrayAdapter<String> {
+public class FOXCurrencyAdapter extends RecyclerView.Adapter<FOXCurrencyAdapter.ViewHolder> implements Filterable {
 
-    private Context context;
+    private final Context context;
+    private final ActivityMainListener listener;
+    
+    private final List<String> mapKeys;
+    private final List<String> mapKeysFull; // For filtering
+    private final Map<String, Float> treeMap;
 
-    private Map<String, Float> treeMap;
-    private String[] mapKeys;
-
-    ActivityMainListener listener;
-
-    /*
-    private TreeMap<String, Float> appsSorted; // for filtering
-    private TreeMap<String, Float> appsOriginal; // for filtering
-    */
-
-    private ArrayList<FOXCurrencyRecord> appsSorted; // for filtering
-    private ArrayList<FOXCurrencyRecord> appsOriginal; // for filtering
-
-    // ActivityMainListener listener;
+    private ItemTouchHelper itemTouchHelper;
+    private boolean showDragHandles = false;
+    private boolean manualDragStarted = false;
 
     public FOXCurrencyAdapter(Context context, Map<String, Float> apps) {
-        super(context, R.layout.activity_main);
-
         this.context = context;
-        // this.treeMap = apps;
-
-        listener = (ActivityMain) context;
-
-        // mapKeys = treeMap.descendingKeySet().toArray(new String[getCount()]);
-
-        // this.appsOriginal = new TreeMap<String, Float> (new FOXRecordSort());
-        this.appsOriginal = new ArrayList<FOXCurrencyRecord>();
-
-        treeMap = new LinkedHashMap<String, Float>();
-
-        treeMap.putAll(apps); // copy of the Map
-        mapKeys = treeMap.keySet().toArray(new String[getCount()]);
-
-
-        for(int i = 0, l = getCount(); i < l; i++) {
-            String code = getItem(i);
-            FOXCurrencyRecord z = new FOXCurrencyRecord();
-            z.code = code;
-            z.value = treeMap.get(code);
-            this.appsOriginal.add(z); // .put(code,0f); // don't care about the value for the filter
-        }
-
+        this.listener = (ActivityMainListener) context;
+        this.treeMap = apps;
+        this.mapKeys = new ArrayList<>(apps.keySet());
+        this.mapKeysFull = new ArrayList<>(mapKeys);
     }
 
-    public void moveItem(int from, int to) {
-        if (from < 0 || from >= mapKeys.length || to < 0 || to >= mapKeys.length) return;
+    public void updateData(Map<String, Float> apps) {
+        this.treeMap.clear();
+        this.treeMap.putAll(apps);
+        this.mapKeys.clear();
+        this.mapKeys.addAll(apps.keySet());
+        this.mapKeysFull.clear();
+        this.mapKeysFull.addAll(mapKeys);
+        notifyDataSetChanged();
+    }
 
-        ArrayList<String> keys = new ArrayList<>(Arrays.asList(mapKeys));
-        String key = keys.remove(from);
-        keys.add(to, key);
-        mapKeys = keys.toArray(new String[0]);
+    public void setItemTouchHelper(ItemTouchHelper itemTouchHelper) {
+        this.itemTouchHelper = itemTouchHelper;
+    }
 
-        // Update treeMap to match new order
+    public void setShowDragHandles(boolean show) {
+        if (this.showDragHandles != show) {
+            this.showDragHandles = show;
+            notifyDataSetChanged();
+        }
+    }
+
+    public boolean isShowDragHandles() {
+        return showDragHandles;
+    }
+
+    public void setManualDragStarted(boolean started) {
+        this.manualDragStarted = started;
+    }
+
+    public boolean isManualDragStarted() {
+        return manualDragStarted;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.row_fullview3, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        final String myCode = mapKeys.get(position);
+
+        holder.text1.setText(myCode);
+
+        if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(myCode)) {
+            float f1 = Global.FOXCurrencyAll.get(myCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency()) * Global.getBaseCurrencyAmount();
+            holder.textValue.setText(String.format(java.util.Locale.US, "%.3f", f1));
+        } else {
+            holder.textValue.setText("0");
+        }
+
+        if (Global.CodeToCurrency.containsKey(myCode)) {
+            holder.text2.setText(context.getString(Global.CodeToCurrency.get(myCode)));
+        } else {
+            holder.text2.setText("");
+        }
+
+        SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        boolean ui_inverse = (SP.getBoolean("ui_inverse", true));
+
+        if (ui_inverse) {
+            if (Global.getBaseCurrencyAmount() != 1f) {
+                if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(myCode)) {
+                    float f1 = Global.FOXCurrencyAll.get(myCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency());
+                    holder.textValue2.setText("1" + Global.getBaseCurrency() + " = " + String.format(java.util.Locale.US, "%.3f", f1));
+                } else {
+                    holder.textValue2.setText("0");
+                }
+            } else {
+                if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(myCode)) {
+                    float f1 = Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(myCode);
+                    holder.textValue2.setText("1" + myCode + " = " + String.format(java.util.Locale.US, "%.3f", f1));
+                } else {
+                    holder.textValue2.setText("unknown");
+                }
+            }
+        } else {
+            holder.textValue2.setText("");
+        }
+
+        holder.flag.setImageResource(Global.getFlag(myCode));
+
+        holder.flag.setOnClickListener(v -> listener.displayOptions(myCode));
+        holder.rowMiddle.setOnClickListener(v -> listener.displayOptions(myCode));
+        holder.rowLayoutValue.setOnClickListener(v -> listener.enterAmount(myCode));
+
+        holder.dragHandle.setVisibility(showDragHandles ? View.VISIBLE : View.GONE);
+
+        holder.dragHandle.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (itemTouchHelper != null) {
+                    manualDragStarted = true;
+                    itemTouchHelper.startDrag(holder);
+                }
+            }
+            return false;
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return mapKeys.size();
+    }
+
+    public String getItem(int position) {
+        return mapKeys.get(position);
+    }
+
+    public void onItemMove(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(mapKeys, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(mapKeys, i, i - 1);
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition);
+        
+        // Update the actual data source
         Map<String, Float> newMap = new LinkedHashMap<>();
         for (String k : mapKeys) {
             newMap.put(k, treeMap.get(k));
         }
-        treeMap = newMap;
-
-        // Update Global as well so it's remembered
-        Global.FOXCurrencyMy = new LinkedHashMap<>(treeMap);
+        Global.FOXCurrencyMy = newMap;
         Global.writeFOXFile(Global.FOXCurrencyMy, Global.FILE_FOX_MY);
-
-        notifyDataSetChanged();
     }
-
-    public int getCount() {
-        return treeMap.size();
-    }
-
-    public String getItem(int position) {
-        // return String.valueOf(treeMap.get(mapKeys[treeMap.size()-position]));
-        return mapKeys[position];
-    }
-
-    public String getValue(int position) {
-        // return String.valueOf(treeMap.get(mapKeys[treeMap.size()-position]));
-        return String.valueOf(treeMap.get(mapKeys[position]));
-    }
-
-
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent)
-    {
-        // if (GPXRecord != null) && position >= GPXRecord.six
-
-        try {
-
-            FOXCurrencyRecord fox = new FOXCurrencyRecord();
-
-            fox.value = treeMap.get(mapKeys[position]);
-            fox.code = mapKeys[position];
-
-            final String myCode = fox.code;
-
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_fullview3, parent, false);
-            }
-            // Lookup view for data population
-            TextView text1 = (TextView) convertView.findViewById(R.id.rowText1);
-            text1.setText(fox.code);
-
-            TextView text3 = (TextView) convertView.findViewById(R.id.rowTextValue);
-            if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(fox.code)) {
-                float f1 = Global.FOXCurrencyAll.get(fox.code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
-                text3.setText(String.format(java.util.Locale.US,"%.3f", f1)  );
-            } else {
-                text3.setText("0");
-            }
-
-
-
-            TextView text4 = (TextView) convertView.findViewById(R.id.rowText2);
-            if (Global.CodeToCurrency.containsKey(fox.code))
-            {
-                text4.setText(context.getString(Global.CodeToCurrency.get(fox.code)));
-            } else {
-                text4.setText("");
-            }
-
-            SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
-            boolean ui_inverse = (SP.getBoolean("ui_inverse",true));
-
-            TextView text5 = (TextView) convertView.findViewById(R.id.rowTextValue2);
-            if (ui_inverse == true) {
-                if (Global.getBaseCurrencyAmount() != 1f) {
-                    if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(fox.code)) {
-                        float f1 = Global.FOXCurrencyAll.get(fox.code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency());  // * Global.getBaseCurrencyAmount();
-                        text5.setText("1" + Global.getBaseCurrency() + " = " + String.format(java.util.Locale.US, "%.3f", f1));
-                    } else {
-                        text5.setText("0");
-                    }
-                } else {
-                    if (Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency()) && Global.FOXCurrencyAll.containsKey(fox.code)) {
-                        float f1 = Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(fox.code);  // * Global.getBaseCurrencyAmount();
-                        text5.setText("1" + fox.code + " = " + String.format(java.util.Locale.US, "%.3f", f1));
-                    } else {
-                        text5.setText("unknown");
-                    }
-                }
-            } else {
-                text5.setText("");
-            }
-
-            ImageView im = (ImageView) convertView.findViewById(R.id.flag);
-
-            im.setImageResource(Global.getFlag(fox.code));
-
-
-            im.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // listener.changeSelectedItem(pos); // STEVE ADD HERE
-                    listener.displayOptions(myCode);
-                }
-            });
-
-            im.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    listener.itemLongClick(myCode, v, position);
-                    return true;
-                }
-            });
-
-            LinearLayout l1 = (LinearLayout) convertView.findViewById(R.id.rowMiddle);
-            l1.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // listener.changeSelectedItem(pos); // STEVE ADD HERE
-                    listener.displayOptions(myCode);
-                }
-            });
-
-            l1.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    listener.itemLongClick(myCode, v, position);
-                    return true;
-                }
-            });
-
-            LinearLayout l2 = (LinearLayout) convertView.findViewById(R.id.rowLayoutValue);
-            l2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // listener.changeSelectedItem(pos); // STEVE ADD HERE
-                    listener.enterAmount(myCode);
-                }
-            });
-
-            l2.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    listener.itemLongClick(myCode, v, position);
-                    return true;
-                }
-            });
-
-            convertView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    listener.itemLongClick(myCode, v, position);
-                    return true;
-                }
-            });
-
-            // Return the completed view to render on screen
-            return convertView;
-
-        } catch (IndexOutOfBoundsException e) {
-            Global.Log("Array out of bounds in adaptor",1);
-            return null;
-        }
-    }
-
-
 
     @Override
     public Filter getFilter() {
-
-        Filter filter = new Filter() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-
-                appsSorted = (ArrayList<FOXCurrencyRecord>)results.values;
-                notifyDataSetChanged();
-                // clear();
-                treeMap.clear();
-
-                if (appsSorted != null) {
-
-                    // mapKeys = new String[appsSorted.size()+1];
-
-                    for(int i = 0, l = appsSorted.size(); i < l; i++) {
-                        FOXCurrencyRecord k = appsSorted.get(i);
-                        treeMap.put(k.code, k.value);
-                    }
-                }
-                mapKeys = treeMap.keySet().toArray(new String[getCount()]);
-                notifyDataSetInvalidated();
-
-                notifyDataSetChanged();
-
-            }
-
+        return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-
-                FilterResults results = new FilterResults();
-
-                Global.Log("Filter stuff",3);
-
-                constraint = constraint.toString().toLowerCase();
-                FilterResults result = new FilterResults();
-                if(constraint != null && constraint.toString().length() > 0)
-                {
-                    ArrayList<FOXCurrencyRecord> filteredItems = new ArrayList<FOXCurrencyRecord>();
-
-                    for(int i = 0, l = appsOriginal.size(); i < l; i++)
-                    {
-                        FOXCurrencyRecord app = appsOriginal.get(i);
-                        if( (app.code.toString().toLowerCase().contains(constraint) ) ) {
-                            // ) || (app.packageName.toString().toLowerCase().contains(constraint)) ) {
-                            filteredItems.add(app);
+                List<String> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(mapKeysFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (String item : mapKeysFull) {
+                        if (item.toLowerCase().contains(filterPattern)) {
+                            filteredList.add(item);
                         }
-
-                    }
-                    result.count = filteredItems.size();
-                    result.values = filteredItems;
-                }
-                else
-                {
-                    synchronized(this)
-                    {
-                        result.values = appsOriginal;
-                        result.count = appsOriginal.size();
                     }
                 }
-                return result;
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
             }
 
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                mapKeys.clear();
+                mapKeys.addAll((List) results.values);
+                notifyDataSetChanged();
+            }
         };
-
-        return filter;
     }
 
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView text1, text2, textValue, textValue2;
+        ImageView flag, dragHandle;
+        LinearLayout rowMiddle, rowLayoutValue;
 
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            text1 = itemView.findViewById(R.id.rowText1);
+            text2 = itemView.findViewById(R.id.rowText2);
+            textValue = itemView.findViewById(R.id.rowTextValue);
+            textValue2 = itemView.findViewById(R.id.rowTextValue2);
+            flag = itemView.findViewById(R.id.flag);
+            dragHandle = itemView.findViewById(R.id.drag_handle);
+            rowMiddle = itemView.findViewById(R.id.rowMiddle);
+            rowLayoutValue = itemView.findViewById(R.id.rowLayoutValue);
+        }
+    }
 }

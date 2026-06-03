@@ -37,8 +37,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.WorkManager;
 
 import java.io.BufferedReader;
@@ -220,7 +224,7 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         text3.setText(String.format(java.util.Locale.US,"%.3f",  Global.getBaseCurrencyAmount())  );
 
 
-        RelativeLayout row = findViewById(R.id.fullrow);
+        LinearLayout row = findViewById(R.id.fullrow);
         row.setOnClickListener(new View.OnClickListener() {
             // @Override
             public void onClick(View v) {
@@ -256,43 +260,74 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         });
 
         // Display it!
-        adapterCurrency = new FOXCurrencyAdapter(myContext, Global.FOXCurrencyMy);
+        if (adapterCurrency == null) {
+            adapterCurrency = new FOXCurrencyAdapter(myContext, Global.FOXCurrencyMy);
 
-        ListView listView = (ListView) findViewById(R.id.listFOX);
+            RecyclerView recyclerView = findViewById(R.id.listFOX);
+            recyclerView.setLayoutManager(new LinearLayoutManager(myContext));
+            recyclerView.setAdapter(adapterCurrency);
 
-        listView.setAdapter(adapterCurrency);
+            ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
-        listView.setClickable(true);
-    }
+                boolean itemMoved = false;
 
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    adapterCurrency.onItemMove(viewHolder.getAbsoluteAdapterPosition(), target.getAbsoluteAdapterPosition());
+                    itemMoved = true;
+                    return true;
+                }
 
-    public void itemLongClick(final String code, View view, final int position) {
-        PopupMenu popup = new PopupMenu(myContext, view);
-        if (position > 0) {
-            popup.getMenu().add(0, 1, 0, "Move Up");
-        }
-        if (position < adapterCurrency.getCount() - 1) {
-            popup.getMenu().add(0, 2, 0, "Move Down");
-        }
-        popup.getMenu().add(0, 3, 0, "Remove");
-
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == 1) { // Up
-                    adapterCurrency.moveItem(position, position - 1);
-                } else if (item.getItemId() == 2) { // Down
-                    adapterCurrency.moveItem(position, position + 1);
-                } else if (item.getItemId() == 3) { // Remove
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    int position = viewHolder.getAbsoluteAdapterPosition();
+                    String code = adapterCurrency.getItem(position);
                     Global.FOXCurrencyMy.remove(code);
                     Global.writeFOXFile(Global.FOXCurrencyMy, Global.FILE_FOX_MY);
                     updateGUI();
                 }
-                return true;
-            }
-        });
-        popup.show();
+
+                @Override
+                public boolean isLongPressDragEnabled() {
+                    return true;
+                }
+
+                @Override
+                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                    super.onSelectedChanged(viewHolder, actionState);
+                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                        itemMoved = false;
+                        if (adapterCurrency.isManualDragStarted()) {
+                            // Dragging started via handle, just reset the flag
+                            adapterCurrency.setManualDragStarted(false);
+                        } else {
+                            // Dragging started via long press, toggle handles
+                            if (adapterCurrency.isShowDragHandles()) {
+                                adapterCurrency.setShowDragHandles(false);
+                            } else {
+                                adapterCurrency.setShowDragHandles(true);
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                    super.clearView(recyclerView, viewHolder);
+                    if (itemMoved) {
+                        adapterCurrency.setShowDragHandles(false);
+                    }
+                }
+            };
+
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
+            itemTouchHelper.attachToRecyclerView(recyclerView);
+            adapterCurrency.setItemTouchHelper(itemTouchHelper);
+        } else {
+            adapterCurrency.updateData(Global.FOXCurrencyMy);
+        }
     }
+
 
     // change base currency amount
     private void enterAmount()

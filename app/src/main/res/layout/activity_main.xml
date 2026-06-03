@@ -7,7 +7,7 @@
     <LinearLayout
         android:id="@+id/activity_main"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingTop="5dp">
 
@@ -81,13 +81,12 @@
 
 
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listFOX"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_marginLeft="0dp"
-            android:cacheColorHint="@android:color/transparent"
-            android:listSelector="@android:color/transparent"
             android:paddingLeft="0dp" />
 
 
