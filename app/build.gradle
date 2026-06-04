@@ -13,8 +13,25 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			
+			minifyEnabled true
+			shrinkResources true
+
+			packagingOptions {
+				resources {
+					excludes += "/assets/dexopt/baseline.prof"
+				}
+			}
+
+
+            // Tell packaging options to exclude the profile binary entirely
+            packagingOptions {
+                resources {
+                    excludes += "/assets/dexopt/baseline.prof"
+                }
+            }
         }
     }
     namespace 'net.stargw.fx'
@@ -34,6 +51,7 @@ android {
             variant.assemble.finalizedBy(swTask)
         }
     }
+    
 }
 
 dependencies {
@@ -45,3 +63,10 @@ dependencies {
 
     implementation "androidx.work:work-runtime:2.11.2"
 }
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+
