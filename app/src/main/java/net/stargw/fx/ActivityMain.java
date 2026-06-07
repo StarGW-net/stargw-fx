@@ -514,7 +514,10 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         });
 
         EditText text = (EditText) info.findViewById(R.id.enterAmount);
-        float f1 = Global.FOXCurrencyAll.get(code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+        float f1 = 0f;
+        if (Global.FOXCurrencyAll.containsKey(code) && Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency())) {
+            f1 = Global.FOXCurrencyAll.get(code) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+        }
         text.setText(String.format(java.util.Locale.US,"%.2f", f1)  );
         text.setCursorVisible(true);
         // text.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -535,7 +538,10 @@ public class ActivityMain extends Activity implements ActivityMainListener {
                     String w = text.getText().toString();
                     Global.Log("Edit text changed = " + w, 3);
                     try {
-                        float f1 = Float.parseFloat(w) * Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(code);
+                        float f1 = 0f;
+                        if (Global.FOXCurrencyAll.containsKey(code) && Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency())) {
+                            f1 = Float.parseFloat(w) * Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(code);
+                        }
                         // This may not multiply back out to be the same value!
                         Global.setBaseCurrencyAmount(f1);
                     } catch (NumberFormatException e){
@@ -567,7 +573,10 @@ public class ActivityMain extends Activity implements ActivityMainListener {
                 String w = text.getText().toString();
                 Global.Log("Edit text changed = " + w, 3);
                 try {
-                    float f1 = Float.parseFloat(w) * Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(code);
+                    float f1 = 0f;
+                    if (Global.FOXCurrencyAll.containsKey(code) && Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency())) {
+                        f1 = Float.parseFloat(w) * Global.FOXCurrencyAll.get(Global.getBaseCurrency()) / Global.FOXCurrencyAll.get(code);
+                    }
                     Global.setBaseCurrencyAmount(f1);
                 } catch (NumberFormatException e){
                     Log.w(Global.TAG, e);
@@ -617,7 +626,10 @@ public class ActivityMain extends Activity implements ActivityMainListener {
             public void onClick(View v) {
                 Global.FOXCurrencyMy.remove(newCode);
                 Global.FOXCurrencyMy.put(Global.getBaseCurrency(), Global.getBaseCurrencyAmount());
-                Float f1 = Global.FOXCurrencyAll.get(newCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+                float f1 = 0f;
+                if (Global.FOXCurrencyAll.containsKey(newCode) && Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency())) {
+                    f1 = Global.FOXCurrencyAll.get(newCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+                }
                 Global.setBaseCurrencyAmount(f1);
                 // Global.setBaseCurrencyAmount(Global.FOXCurrencyAll.get(newCode) );
                 Global.setBaseCurrency(newCode);
@@ -1539,7 +1551,10 @@ public class ActivityMain extends Activity implements ActivityMainListener {
         });
 
         EditText text = (EditText) info.findViewById(R.id.enterAmount);
-        float fl = Global.FOXCurrencyAll.get(otherCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+        float fl = 0f;
+        if (Global.FOXCurrencyAll.containsKey(otherCode) && Global.FOXCurrencyAll.containsKey(Global.getBaseCurrency())) {
+            fl = Global.FOXCurrencyAll.get(otherCode) / Global.FOXCurrencyAll.get(Global.getBaseCurrency())  * Global.getBaseCurrencyAmount();
+        }
         text.setText(String.format(java.util.Locale.US,"%.3f",fl));
         text.setCursorVisible(true);
         // text.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -1597,7 +1612,11 @@ public class ActivityMain extends Activity implements ActivityMainListener {
                 t = (TextView) info.findViewById(R.id.countryCode2);
                 rateRecord.code2 = (String) t.getText();
                 rateRecord.value = f1;
-                rateRecord.oldValue = Global.FOXCurrencyAll.get(rateRecord.code2) / Global.FOXCurrencyAll.get(rateRecord.code1); // need to store the converted rate
+                float oldVal = 0f;
+                if (Global.FOXCurrencyAll.containsKey(rateRecord.code1) && Global.FOXCurrencyAll.containsKey(rateRecord.code2)) {
+                    oldVal = Global.FOXCurrencyAll.get(rateRecord.code2) / Global.FOXCurrencyAll.get(rateRecord.code1);
+                }
+                rateRecord.oldValue = oldVal; // need to store the converted rate
                 // how do we get the other values on this screen? Get from
                 Global.FOXRateAlerts.add(rateRecord);
                 adapterRateAlerts.reset(Global.FOXRateAlerts); // because of filter applied

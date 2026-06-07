@@ -28,22 +28,25 @@ public class MySettingsActivity extends AppCompatActivity {
             pref1.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    CheckBoxPreference pref1 = (CheckBoxPreference) findPreference("use_open");
-                    // your code here
-                    if ((boolean) newValue == false)
-                    {
-                        pref1.setEnabled(true);
-                        pref1.setChecked(true);
+                    boolean val = (boolean) newValue;
+                    CheckBoxPreference pref2 = (CheckBoxPreference) findPreference("use_open");
+                    if (val) {
+                        pref2.setChecked(false);
                     } else {
-                        // pref1.setEnabled(false);
-                        pref1.setChecked(false);
+                        pref2.setChecked(true);
                     }
-                    // preference.setEnabled((boolean) newValue);
+
                     CheckBoxPreference c = (CheckBoxPreference) preference;
-                    c.setChecked((boolean) newValue);
+                    c.setChecked(val);
 
+                    SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SP.edit().putBoolean("use_ecb", val).putBoolean("use_open", !val).apply();
 
-                    return (boolean) newValue;
+                    Global.Log("Checkbox changed updating ECB!",3);
+                    Global.updateCurrency();
+                    Global.setUpdateCurrencySchedule();
+
+                    return val;
                 }
             });
 
@@ -52,30 +55,36 @@ public class MySettingsActivity extends AppCompatActivity {
             pref2.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    boolean val = (boolean) newValue;
                     CheckBoxPreference pref1 = (CheckBoxPreference) findPreference("use_ecb");
-                    // your code here
-                    if ((boolean) newValue == false)
-                    {
-                        pref1.setEnabled(true);
-                        pref1.setChecked(true);
-                    } else {
-                        // pref1.setEnabled(false);
+                    if (val) {
                         pref1.setChecked(false);
+                    } else {
+                        pref1.setChecked(true);
                     }
-                    // preference.setEnabled((boolean) newValue);
+
                     CheckBoxPreference c = (CheckBoxPreference) preference;
-                    c.setChecked((boolean) newValue);
+                    c.setChecked(val);
+
                     SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SP.edit().putBoolean("use_ecb", !val).putBoolean("use_open", val).apply();
+
                     String api = SP.getString("openexchange","none");
-                    if (!(api.equalsIgnoreCase("none")))
-                    {
-                        Global.Log("Checkbox changed updating OER!",3);
+                    if (val) {
+                        if (!(api.equalsIgnoreCase("none")))
+                        {
+                            Global.Log("Checkbox changed updating OER!",3);
+                            Global.updateCurrency();
+                            Global.setUpdateCurrencySchedule();
+                        } else {
+                            Global.Log("Rate feed changed to OER but key is still none!",3);
+                        }
+                    } else {
+                        Global.Log("Checkbox changed updating ECB!",3);
                         Global.updateCurrency();
                         Global.setUpdateCurrencySchedule();
-                    } else {
-                        Global.Log("Rate feed changed to OER but key is still none!",3);
                     }
-                    return (boolean) newValue;
+                    return val;
                 }
             });
 
@@ -85,10 +94,15 @@ public class MySettingsActivity extends AppCompatActivity {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String k = (String) newValue;
+                    
+                    EditTextPreference c = (EditTextPreference) preference;
+                    c.setText(k);
+                    
+                    SharedPreferences SP = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SP.edit().putString("openexchange", k).apply();
+
                     if (!(k.equalsIgnoreCase("none")))
                     {
-                        EditTextPreference c = (EditTextPreference) preference;
-                        c.setText(k);
                         Global.Log("Key changed updating OER!",3);
                         Global.updateCurrency(); // async
                         Global.setUpdateCurrencySchedule();

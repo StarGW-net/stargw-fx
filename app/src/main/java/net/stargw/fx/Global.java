@@ -51,7 +51,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -464,51 +463,40 @@ public class Global extends Application {
     public static void writeFOXFile(Map<String, Float> weights, String f) {
         File appDir = mContext.getFilesDir();
         File mypath = new File(appDir, f);
-        try {
-            FileOutputStream myFile = new FileOutputStream(mypath);
-            // FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            ObjectOutputStream os = new ObjectOutputStream(myFile);
+        try (FileOutputStream fos = new FileOutputStream(mypath);
+             ObjectOutputStream os = new ObjectOutputStream(fos)) {
             os.writeObject(weights);
-            os.close();
-            myFile.close();
         } catch (IOException e) {
-            Log.w(TAG, e);
+            Log.w(TAG, "Error writing file " + f + ": " + e);
         }
     }
 
     public static Map<String, Float> readFOXFile(String f) {
-        Properties properties = new Properties();
         File appDir = mContext.getFilesDir();
         File mypath = new File(appDir, f);
 
         Map<String, Float> simpleClass = new LinkedHashMap<String, Float>();
 
-        // TreeMap<String, Float> simpleClass = new TreeMap<String, Float> (new FOXRecordSort());  // This is the comparitor because it needs to be searalisable as well
+        if (!mypath.exists()) {
+            return simpleClass;
+        }
 
-        /*
-        TreeMap<String, Float> simpleClass = new TreeMap<String, Float>(new Comparator<String>() {
-            public int compare(String o1, String o2) {
-                return o1.toLowerCase().compareTo(o2.toLowerCase());
+        try (FileInputStream fis = new FileInputStream(mypath);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            Object obj = ois.readObject();
+            if (obj instanceof Map) {
+                simpleClass.putAll((Map<String, Float>) obj);
             }
-        });
-        */
-
-        try {
-            FileInputStream myFile = new FileInputStream(mypath);
-            ObjectInputStream is = new ObjectInputStream(myFile);
-            try {
-                Map<String, Float> loadedMap = (Map<String, Float>) is.readObject();
-                simpleClass.putAll(loadedMap);
-            } catch (ClassNotFoundException e) {
-                Log.w(TAG, e);
-            }
-            is.close();
-            myFile.close();
         } catch (FileNotFoundException e) {
-            // do stuff here..
             Global.Log("File not found: " + f, 1);
-        } catch (IOException e) {
-            Log.w(TAG, e);
+        } catch (IOException | ClassNotFoundException | ClassCastException e) {
+            Log.w(TAG, "Error reading file " + f + ": " + e);
+            // Corrupted file, delete it
+            try {
+                mypath.delete();
+            } catch (Exception ex) {
+                // ignore
+            }
         }
 
         return simpleClass;
@@ -518,52 +506,40 @@ public class Global extends Application {
     public static void writeRateAlertFile(ArrayList<FOXRateAlertRecord> weights, String f) {
         File appDir = mContext.getFilesDir();
         File mypath = new File(appDir, f);
-        try {
-            FileOutputStream myFile = new FileOutputStream(mypath);
-            // FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            ObjectOutputStream os = new ObjectOutputStream(myFile);
+        try (FileOutputStream fos = new FileOutputStream(mypath);
+             ObjectOutputStream os = new ObjectOutputStream(fos)) {
             os.writeObject(weights);
-            os.close();
-            myFile.close();
         } catch (IOException e) {
-            Log.w(TAG, e);
+            Log.w(TAG, "Error writing file " + f + ": " + e);
         }
     }
 
     public static ArrayList<FOXRateAlertRecord> readRateAlertFile(String f) {
-        Properties properties = new Properties();
         File appDir = mContext.getFilesDir();
         File mypath = new File(appDir, f);
 
         ArrayList<FOXRateAlertRecord> simpleClass = new ArrayList<FOXRateAlertRecord>();
 
-        // TreeMap<String, Float> simpleClass = new TreeMap<String, Float> (new FOXRecordSort());  // This is the comparitor because it needs to be searalisable as well
+        if (!mypath.exists()) {
+            return simpleClass;
+        }
 
-        /*
-        TreeMap<String, Float> simpleClass = new TreeMap<String, Float>(new Comparator<String>() {
-            public int compare(String o1, String o2) {
-                return o1.toLowerCase().compareTo(o2.toLowerCase());
+        try (FileInputStream fis = new FileInputStream(mypath);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            Object obj = ois.readObject();
+            if (obj instanceof ArrayList) {
+                simpleClass = (ArrayList<FOXRateAlertRecord>) obj;
             }
-        });
-        */
-
-        try {
-            FileInputStream myFile = new FileInputStream(mypath);
-            ObjectInputStream is = new ObjectInputStream(myFile);
-            try {
-                simpleClass = (ArrayList<FOXRateAlertRecord>) is.readObject();
-            } catch (ClassNotFoundException e) {
-                Log.w(TAG, e);
-            } catch (Exception e) {
-                Log.w(TAG, e);
-            }
-            is.close();
-            myFile.close();
         } catch (FileNotFoundException e) {
-            // do stuff here..
             Global.Log("File not found: " + f, 1);
-        } catch (IOException e) {
-            Log.w(TAG, e);
+        } catch (IOException | ClassNotFoundException | ClassCastException e) {
+            Log.w(TAG, "Error reading file " + f + ": " + e);
+            // Corrupted file, delete it
+            try {
+                mypath.delete();
+            } catch (Exception ex) {
+                // ignore
+            }
         }
 
         return simpleClass;
@@ -773,25 +749,20 @@ public class Global extends Application {
         try {
             while ((line = reader.readLine()) != null) {
                 // Global.Log(line,3);
-                String reg = "\\s*\\\"(.*?)\\\":\\s+(.*?),";
+                String reg = "\\\"([A-Z]{3})\\\"\\s*:\\s*([0-9\\.]+)";
 
                 Pattern pattern = Pattern.compile(reg);
                 Matcher matcher = pattern.matcher(line);
-                if ((matcher.find()) && (matcher.groupCount() == 2)) {
+                while (matcher.find()) {
                     // Global.Log("Match = " + matcher.group(1) + " ==> " +  matcher.group(2) ,3);
-                    if (matcher.group(1).length() == 3) {
-                        try {
-                            float f1 = Float.parseFloat(matcher.group(2));
-                            Global.FOXCurrencyAll.put(matcher.group(1), f1);
-                        } catch (Exception e) {
-                            String errorMessage = "Number Error: " + e.toString();
-                            Global.Log(errorMessage, 1);
-                        }
+                    try {
+                        float f1 = Float.parseFloat(matcher.group(2));
+                        Global.FOXCurrencyAll.put(matcher.group(1), f1);
+                    } catch (Exception e) {
+                        String errorMessage = "Number Error: " + e.toString();
+                        Global.Log(errorMessage, 1);
                     }
-
                 }
-
-
             }
         } catch (Exception e) {
             Global.increaseErrorCount();
